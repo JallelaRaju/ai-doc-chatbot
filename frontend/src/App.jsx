@@ -1,438 +1,230 @@
-// frontend/src/App.jsx
-
-import React, { useState } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
 function App() {
-
   const [file, setFile] = useState(null);
-
   const [summary, setSummary] = useState("");
-
-  const [text, setText] = useState("");
-
   const [question, setQuestion] = useState("");
-
   const [answer, setAnswer] = useState("");
-
+  const [content, setContent] = useState("");
   const [timestamps, setTimestamps] = useState([]);
-
+  const [mediaUrl, setMediaUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // -----------------------------------
-  // PLAY TIMESTAMP
-  // -----------------------------------
-  const playTimestamp = (time) => {
+  const mediaRef = useRef(null);
 
-    const media = document.getElementById(
-      "mediaPlayer"
-    );
+  const API_KEY = "raju123";
 
-    if (media) {
-
-      media.currentTime = time;
-
-      media.play();
+  const uploadFile = async () => {
+    if (!file) {
+      alert("Please select a file");
+      return;
     }
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:8000/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "x-api-key": API_KEY,
+          },
+        }
+      );
+
+      setSummary(response.data.summary);
+      setContent(response.data.text);
+      setTimestamps(response.data.timestamps || []);
+
+      if (response.data.media_url) {
+        setMediaUrl(
+          `http://127.0.0.1:8000/${response.data.media_url}`
+        );
+      } else {
+        setMediaUrl("");
+      }
+    } catch (error) {
+      console.log(error);
+      alert("Upload Failed");
+    }
+
+    setLoading(false);
   };
 
-  // -----------------------------------
-  // UPLOAD FILE
-  // -----------------------------------
-  const handleUpload = async () => {
-
-    if (!file) {
-
-      alert("Select file");
-
+  const askQuestion = async () => {
+    if (!question) {
+      alert("Please enter question");
       return;
     }
 
     try {
-
-      setLoading(true);
-
-      setSummary(
-        "Please wait... Processing file."
-      );
-
-      setText("");
-
-      setAnswer("");
-
-      setTimestamps([]);
-
-      const formData = new FormData();
-
-      formData.append("file", file);
-
       const response = await axios.post(
-
-        "http://127.0.0.1:8000/upload",
-
-        formData,
-
+        "http://127.0.0.1:8000/chat",
+        { question },
         {
           headers: {
-
-            "Content-Type":
-            "multipart/form-data",
-
-            "x-api-key":
-            "raju123"
+            "x-api-key": API_KEY,
           },
-
-          timeout: 0
         }
       );
 
-      console.log(response.data);
-
-      // SUCCESS DATA
-
-      setSummary(
-        response?.data?.summary || ""
-      );
-
-      setText(
-        response?.data?.text || ""
-      );
-
-      setTimestamps(
-        response?.data?.timestamps || []
-      );
-
-      alert("Upload Success");
-
-    } catch (err) {
-
-      console.log(err);
-
-      // NETWORK ERROR FIX
-
-      if (err.response) {
-
-        setSummary(
-          "Server Error"
-        );
-
-      } else if (err.request) {
-
-        setSummary(
-          "Network Error. Please wait and try again."
-        );
-
-      } else {
-
-        setSummary(
-          "Unexpected Error"
-        );
-      }
-
-    } finally {
-
-      setLoading(false);
+      setAnswer(response.data.answer);
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong");
     }
   };
 
-  // -----------------------------------
-  // ASK QUESTION
-  // -----------------------------------
-  const askQuestion = async () => {
-
-    try {
-
-      if (!question) {
-
-        alert("Enter question");
-
-        return;
-      }
-
-      setAnswer("Thinking...");
-
-      const response = await axios.post(
-
-        "http://127.0.0.1:8000/chat",
-
-        {
-          question
-        },
-
-        {
-          headers: {
-
-            "x-api-key":
-            "raju123"
-          }
-        }
-      );
-
-      const textAnswer =
-        String(
-          response.data.answer || ""
-        );
-
-      let current = "";
-
-      setAnswer("");
-
-      // STREAMING EFFECT
-
-      for (
-        let i = 0;
-        i < textAnswer.length;
-        i++
-      ) {
-
-        current += textAnswer[i];
-
-        setAnswer(current);
-
-        await new Promise(
-
-          resolve =>
-
-            setTimeout(
-              resolve,
-              8
-            )
-        );
-      }
-
-    } catch (err) {
-
-      console.log(err);
-
-      setAnswer(
-        "Chat Error"
-      );
+  const playTimestamp = (startTime) => {
+    if (mediaRef.current) {
+      mediaRef.current.currentTime = startTime;
+      mediaRef.current.play();
     }
   };
 
   return (
+    <div className="app">
+      <h1 className="title">AI Document Chatbot</h1>
 
-    <div className="container">
+      <div className="card">
+        <h2 className="section-title">Upload File</h2>
 
-      <h1>
-        AI Document Chatbot
-      </h1>
+        <input
+          type="file"
+          onChange={(e) => setFile(e.target.files[0])}
+        />
 
-      {/* FILE INPUT */}
+        <br />
 
-      <input
+        <button onClick={uploadFile}>
+          Upload File
+        </button>
 
-        type="file"
-
-        onChange={(e) =>
-          setFile(
-            e.target.files[0]
-          )
-        }
-      />
-
-      <br />
-      <br />
-
-      <button
-        onClick={handleUpload}
-      >
-        Upload File
-      </button>
-
-      {/* LOADING */}
-
-      {
-        loading &&
-        <p>
-          Processing file...
-        </p>
-      }
-
-      <hr />
-
-      {/* MEDIA PLAYER */}
-
-      {
-        file &&
-        (
-          file.name.endsWith(".mp3")
-          ||
-          file.name.endsWith(".wav")
-        ) ? (
-
-          <audio
-
-            id="mediaPlayer"
-
-            controls
-          >
-
-            <source
-
-              src={
-                URL.createObjectURL(file)
-              }
-            />
-
-          </audio>
-
-        ) : (
-
-          file &&
-          (
-            file.name.endsWith(".mp4")
-            ||
-            file.name.endsWith(".mov")
-            ||
-            file.name.endsWith(".avi")
-          ) && (
-
-            <video
-
-              id="mediaPlayer"
-
-              width="600"
-
-              controls
-            >
-
-              <source
-
-                src={
-                  URL.createObjectURL(file)
-                }
-              />
-
-            </video>
-          )
-        )
-      }
-
-      {/* SUMMARY */}
-
-      <h2>
-        AI Summary
-      </h2>
-
-      <pre>
-        {summary}
-      </pre>
-
-      <hr />
-
-      {/* ASK QUESTIONS */}
-
-      <h2>
-        Ask Questions
-      </h2>
-
-      <input
-
-        type="text"
-
-        placeholder="Ask question"
-
-        value={question}
-
-        onChange={(e) =>
-          setQuestion(
-            e.target.value
-          )
-        }
-
-        style={{
-          width: "350px",
-          padding: "10px"
-        }}
-      />
-
-      <br />
-      <br />
-
-      <button
-        onClick={askQuestion}
-      >
-        Ask
-      </button>
-
-      <hr />
-
-      {/* ANSWER */}
-
-      <h2>
-        Answer
-      </h2>
-
-      <pre>
-        {answer}
-      </pre>
-
-      <hr />
-
-      {/* TIMESTAMPS */}
-
-      <h2>
-        Timestamps
-      </h2>
-
-      {
-        timestamps.length === 0 && (
-
-          <p>
-            No timestamps available
+        {loading && (
+          <p className="loading">
+            Processing file...
           </p>
-        )
-      }
+        )}
+      </div>
 
-      {
-        timestamps.map(
-          (item, index) => (
+      <div className="card">
+        <h2 className="section-title">AI Summary</h2>
 
-            <div key={index}>
+        <div className="summary-box">
+          {summary || "No summary available"}
+        </div>
+      </div>
 
+      {mediaUrl && (
+        <div className="card">
+          <h2 className="section-title">
+            Media Player
+          </h2>
+
+          {mediaUrl.endsWith(".mp4") ||
+          mediaUrl.endsWith(".mov") ||
+          mediaUrl.endsWith(".avi") ? (
+            <video
+              ref={mediaRef}
+              controls
+              className="media-player"
+            >
+              <source
+                src={mediaUrl}
+                type="video/mp4"
+              />
+            </video>
+          ) : (
+            <audio
+              ref={mediaRef}
+              controls
+              className="media-player"
+            >
+              <source
+                src={mediaUrl}
+                type="audio/mpeg"
+              />
+            </audio>
+          )}
+        </div>
+      )}
+
+      <div className="card">
+        <h2 className="section-title">
+          Ask Questions
+        </h2>
+
+        <input
+          type="text"
+          placeholder="Ask question"
+          value={question}
+          onChange={(e) =>
+            setQuestion(e.target.value)
+          }
+        />
+
+        <br />
+
+        <button onClick={askQuestion}>
+          Ask
+        </button>
+      </div>
+
+      <div className="card">
+        <h2 className="section-title">Answer</h2>
+
+        <div className="answer-box">
+          {answer || "No answer yet"}
+        </div>
+      </div>
+
+      <div className="card">
+        <h2 className="section-title">
+          Timestamps
+        </h2>
+
+        {timestamps.length > 0 ? (
+          timestamps.map((item, index) => (
+            <div
+              className="timestamp-item"
+              key={index}
+            >
               <button
-
                 onClick={() =>
-                  playTimestamp(
-                    item.start
-                  )
+                  playTimestamp(item.start)
                 }
               >
                 Play
               </button>
 
-              <b>
+              <span className="timestamp-time">
+                {item.start}s - {item.end}s
+              </span>
 
-                {" "}
-                {item.start}s
-                -
-                {item.end}s
-
-              </b>
-
-              <p>
-                {item.text}
-              </p>
-
-              <hr />
-
+              <p>{item.text}</p>
             </div>
-          )
-        )
-      }
+          ))
+        ) : (
+          <p>No timestamps available</p>
+        )}
+      </div>
 
-      {/* EXTRACTED CONTENT */}
+      <div className="card">
+        <h2 className="section-title">
+          Extracted Content
+        </h2>
 
-      <h2>
-        Extracted Content
-      </h2>
-
-      <pre>
-        {text}
-      </pre>
-
+        <div className="content-box">
+          {content || "No content extracted"}
+        </div>
+      </div>
     </div>
   );
 }

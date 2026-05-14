@@ -2,58 +2,60 @@
 
 ## Project Overview
 
-This project is an AI-powered full-stack web application that allows users to upload PDF documents, audio files, and video files, then interact with the uploaded content using an AI chatbot.
+This project is an AI-powered full-stack web application that allows users to upload PDF documents, audio files, and video files and interact with them using an AI chatbot.
 
-The application can:
+The application supports:
 
-- Upload PDF, audio, and video files
-- Extract text from uploaded files
-- Generate summaries
-- Transcribe audio/video using Whisper AI
-- Extract timestamps from media
-- Play media from specific timestamps
-- Perform semantic search using FAISS
-- Answer questions based on uploaded content
+- PDF upload and text extraction
+- Audio/video transcription using Whisper AI
+- AI summaries
+- Timestamp extraction
+- Media playback from timestamps
+- Semantic search using FAISS
+- Question answering
 
 ---
 
 # Features
 
 ## PDF Processing
+
 - Upload PDF files
 - Extract document text
 - Generate summaries
-- Ask questions about document content
+- Ask questions from document content
 
 ## Audio Processing
+
 - Upload MP3/WAV files
 - Whisper AI transcription
 - Timestamp extraction
-- Media playback from timestamps
+- Audio playback
 
 ## Video Processing
+
 - Upload MP4/MOV/AVI files
 - Extract audio from video
 - Whisper AI transcription
 - Timestamp extraction
-- Video playback support
+- Video playback
 
 ## AI Chatbot
+
 - Semantic search using FAISS
 - Question answering
-- Content summarization
-
-## Security
-- API key authentication
+- AI-generated summaries
 
 ## Database
-- SQLite database integration using SQLAlchemy
+
+- SQLite database using SQLAlchemy
 
 ---
 
 # Tech Stack
 
 ## Backend
+
 - FastAPI
 - Python
 - Whisper AI
@@ -64,6 +66,7 @@ The application can:
 - PyMuPDF
 
 ## Frontend
+
 - React.js
 - Axios
 - HTML5 Audio/Video
@@ -74,6 +77,10 @@ The application can:
 
 ```bash
 ai-doc-chatbot/
+│
+├── .github/
+│   └── workflows/
+│       └── main.yml
 │
 ├── backend/
 │   ├── app/
@@ -88,20 +95,58 @@ ai-doc-chatbot/
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── App.css
+│   │   ├── main.jsx
 │
-├── .github/
-│   └── workflows/
-│       └── main.yml
+├── Screenshots/
+│   ├── Home1.png
+│   ├── Home2.png
+│   ├── Audio.png
+│   ├── Video.png
+│   ├── pdf.png
+│   ├── Timestamps.png
 │
 ├── docker-compose.yml
 ├── README.md
+├── .gitignore
 ```
 
 ---
 
-# Installation
+# Screenshots
 
-## Backend Setup
+## Home Page
+
+![Home Page 1](Screenshots/Home1.png)
+
+![Home Page 2](Screenshots/Home2.png)
+
+---
+
+## PDF Upload
+
+![PDF Upload](Screenshots/pdf.png)
+
+---
+
+## Audio Upload
+
+![Audio Upload](Screenshots/Audio.png)
+
+---
+
+## Video Upload
+
+![Video Upload](Screenshots/Video.png)
+
+---
+
+## Timestamp Playback
+
+![Timestamp Playback](Screenshots/Timestamp.png)
+
+---
+
+# Backend Setup
 
 ```bash
 cd backend
@@ -115,8 +160,6 @@ python -m venv venv
 
 Activate virtual environment:
 
-### Windows
-
 ```bash
 venv\Scripts\activate
 ```
@@ -127,19 +170,13 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Install additional packages:
-
-```bash
-pip install httptools
-```
-
 Run backend:
 
 ```bash
-uvicorn app.main:app --http httptools
+uvicorn app.main:app --reload
 ```
 
-Backend runs on:
+Backend URL:
 
 ```bash
 http://127.0.0.1:8000
@@ -165,7 +202,7 @@ Run frontend:
 npm run dev
 ```
 
-Frontend runs on:
+Frontend URL:
 
 ```bash
 http://localhost:5173
@@ -177,13 +214,11 @@ http://localhost:5173
 
 ## Upload File
 
-### Endpoint
-
 ```bash
 POST /upload
 ```
 
-### Supported Files
+Supported files:
 
 - PDF
 - MP3
@@ -196,13 +231,11 @@ POST /upload
 
 ## Chatbot
 
-### Endpoint
-
 ```bash
 POST /chat
 ```
 
-### Example Request
+Example:
 
 ```json
 {
@@ -214,9 +247,7 @@ POST /chat
 
 # Authentication
 
-The backend uses API key authentication.
-
-Example:
+Example API key:
 
 ```bash
 x-api-key: raju123
@@ -226,52 +257,11 @@ x-api-key: raju123
 
 # Semantic Search
 
-FAISS vector search is implemented for semantic document retrieval.
-
-The chatbot retrieves the most relevant document chunks based on user queries.
-
----
-
-# Timestamp Extraction
-
-Whisper AI generates timestamps for:
-- Audio files
-- Video files
-
-Users can:
-- View timestamps
-- Click play button
-- Jump to relevant media section
-
----
-
-# Screenshots
-
-## Home Page
-
-(Add Screenshot Here)
-
-## PDF Upload
-
-(Add Screenshot Here)
-
-## Audio Upload
-
-(Add Screenshot Here)
-
-## Video Upload
-
-(Add Screenshot Here)
-
-## Timestamp Playback
-
-(Add Screenshot Here)
+FAISS vector search is used for semantic retrieval of document chunks.
 
 ---
 
 # Docker Support
-
-Run using Docker:
 
 ```bash
 docker-compose up --build
@@ -279,9 +269,9 @@ docker-compose up --build
 
 ---
 
-# GitHub Actions CI/CD
+# GitHub Actions
 
-GitHub Actions workflow is configured in:
+Workflow file:
 
 ```bash
 .github/workflows/main.yml
@@ -295,10 +285,9 @@ GitHub Actions workflow is configured in:
 - JWT authentication
 - Redis caching
 - Pinecone vector database
-- Real-time streaming responses
 
 ---
 
 # Author
 
-Jallela Raju
+## Jallela Raju
